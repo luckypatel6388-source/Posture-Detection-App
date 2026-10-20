@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computer Vision Based Posture Detection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+           font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            }
+            
+        body {
+            background-color: #030712;
+            color: #ffffff;
+            line-height: 1.6;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* 30% Opacity Custom Background GIF Layer */
+        .bg-gif-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3bTRwZmVjdHJ3anU1dmhxMWpkN2JxNW1kcWd5eWd0ZGFoZDdvMDd3eCZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/kgVGriqhxl2ym8oiFh/giphy.gif');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.3;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Navigation */
+        nav {
+            padding: 24px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 120px 0 80px;
+            text-align: center;
+        }
+
+        .tagline {
+            background: rgba(17, 24, 39, 0.8);
+            color: #a1a1aa;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: inline-block;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            letter-spacing: 0.03em;
+            backdrop-filter: blur(6px);
+        }
+
+        h1 {
+            font-size: 3.2rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 20px;
+            color: #ffffff;
+        }
+
+        p.subtitle {
+            font-size: 1.25rem;
+            color: #d4d4d8;
+            max-width: 680px;
+            margin: 0 auto 40px;
+        }
+
+        .download-btn {
+            background-color: #ffffff;
+            color: #000000;
+            padding: 18px 40px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.15);
+        }
+
+        .download-btn:hover {
+            background-color: #e4e4e7;
+            transform: translateY(-2px);
+        }
+
+        .sys-req {
+            margin-top: 18px;
+            font-size: 0.85rem;
+            color: #a1a1aa;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 60px 0 40px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            background-color: rgba(15, 23, 42, 0.75);
+            padding: 28px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .card h3 {
+            font-size: 1.15rem;
+            margin-bottom: 10px;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .card p {
+            color: #a1a1aa;
+            font-size: 0.95rem;
+        }
+
+        /* Steps Section */
+        .steps-section {
+            padding: 40px 0 100px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 32px;
+            color: #ffffff;
+            letter-spacing: -0.01em;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .step-card {
+            background-color: rgba(15, 23, 42, 0.65);
+            padding: 24px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .step-number {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #38bdf8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+
+        .step-card h4 {
+            font-size: 1.1rem;
+            color: #ffffff;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .step-card p {
+            color: #a1a1aa;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #71717a;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Custom Background Layer -->
+    <div class="bg-gif-overlay"></div>
+
+    <div class="container">
+        <nav>
+            <div class="logo">Computer Vision Based Posture Detection</div>
+        </nav>
+
+        <section class="hero">
+            <span class="tagline">Local Execution & Zero Data Transmission</span>
+            <h1>Computer Vision Based Posture Detection</h1>
+            <p class="subtitle">A background desktop utility monitoring user sitting alignment in real-time via camera feed and triggering subtle alerts upon slouch detection.</p>
+
+            <a href="PostureDetector-Setup.exe" class="download-btn" download>
+                Download Executable (.exe)
+            </a>
+
+            <p class="sys-req">Windows 10 / 11 | CPU Optimized | Privacy-Preserving</p>
+        </section>
+
+        <section class="features">
+            <div class="card">
+                <h3>Local Processing</h3>
+                <p>All landmark detection logic executes on the client device. Video streams are analyzed frame-by-frame in memory and immediately discarded.</p>
+            </div>
+            <div class="card">
+                <h3>Resource Throttling</h3>
+                <p>Uses MediaPipe keypoint detection running at regulated intervals to maintain low memory consumption and prevent thermal throttling.</p>
+            </div>
+            <div class="card">
+                <h3>Native Desktop Alerts</h3>
+                <p>Dispatches operating system notifications upon persistent slouch verification, incorporating threshold filtering and notification cooldowns.</p>
+            </div>
+        </section>
+
+        <section class="steps-section">
+            <h2 class="section-title">Installation & Quick Start</h2>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">Step 1</div>
+                    <h4>Download</h4>
+                    <p>Get the standalone executable package directly from the link above.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">Step 2</div>
+                    <h4>Install</h4>
+                    <p>Run the downloaded file to place the application on your system.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">Step 3</div>
+                    <h4>Run It</h4>
+                    <p>Launch the utility, sit up straight for 3 seconds to set your baseline posture, and let it work.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">Step 4</div>
+                    <h4>Privacy Assured</h4>
+                    <p>All processing runs locally on your device. Zero camera data or personal info is sent externally.</p>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>Computer Vision Based Posture Detection Project</p>
+        </footer>
+    </div>
+
+</body>
+</html>
